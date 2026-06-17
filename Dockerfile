@@ -2,8 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instalar behave
-RUN pip install --no-cache-dir behave
+# Instalar dependencias de pruebas
+RUN pip install --no-cache-dir behave pytest
 
 # Copiar archivos del proyecto
 COPY src/ ./src/
