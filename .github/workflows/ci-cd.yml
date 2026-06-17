@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+
+jobs:
+  validate:
+    name: Validar y Probar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Ejecutar Pruebas Locales (make test)
+        run: |
+          make test
+
+      - name: Actualizar Tarjeta en Trello
+        if: success()
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+          TRELLO_DOING_LIST_ID: ${{ secrets.TRELLO_DOING_LIST_ID }}
+          TRELLO_DONE_LIST_ID: ${{ secrets.TRELLO_DONE_LIST_ID }}
+        run: |
+          # Obtener la rama actual (limpiando referencias de pull request si aplica)
+          BRANCH="${{ github.head_ref }}"
+          if [ -z "$BRANCH" ]; then
+            BRANCH="${{ github.ref_name }}"
+          fi
+          
+          # Extraer palabra clave de la rama (por ejemplo, de feature/hola-mundo se obtiene hola-mundo)
+          BRANCH_KEYWORD=$(echo "$BRANCH" | awk -F'/' '{print $NF}' | tr '[:upper:]' '[:lower:]')
+          echo "Buscando tarjeta para la rama: $BRANCH (palabra clave: $BRANCH_KEYWORD)"
+          
+          # Obtener las tarjetas de la lista de tareas en progreso (Doing)
+          CARDS=$(curl -s "https://api.trello.com/1/lists/${TRELLO_DOING_LIST_ID}/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}")
+          
+          # Filtrar la tarjeta cuyo nombre contenga la palabra clave de la rama o "fase"
+          CARD_ID=$(echo "$CARDS" | jq -r --arg kw "$BRANCH_KEYWORD" '.[] | select(.name | ascii_downcase | (contains($kw) or contains("fase 2") or contains("fase 3"))) | .id' | head -n 1)
+          
+          if [ -n "$CARD_ID" ] && [ "$CARD_ID" != "null" ]; then
+            echo "Tarjeta encontrada con ID: $CARD_ID. Moviéndola a la lista DONE..."
+            curl -s -X PUT "https://api.trello.com/1/cards/${CARD_ID}?idList=${TRELLO_DONE_LIST_ID}&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}"
+          else
+            echo "No se encontró ninguna tarjeta coincidente con '$BRANCH_KEYWORD', 'fase 2' o 'fase 3' en la lista DOING."
+          fi
