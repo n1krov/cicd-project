@@ -12,7 +12,7 @@
 - [x] Ejecutar la prueba localmente con `make test` y verificar el "Fallo Rápido".
 
 ## Fase 3: Automatización del Servidor de IC y Feedback
-- [ ] Crear el workflow de GitHub Actions (`ci-cd.yml`).
-- [ ] Implementar la integración con la API de Trello para mover tarjetas desde el pipeline.
+- [x] Crear el workflow de GitHub Actions (`ci-cd.yml`).
+- [x] Implementar la integración con la API de Trello para mover tarjetas desde el pipeline.
 - [ ] Configurar las alertas por correo electrónico en caso de fallos.
 - [ ] [cite_start]Habilitar y validar el despliegue automático en GitHub Pages[cite: 8].
