@@ -10,13 +10,18 @@ on:
       - dev
       - master
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   validate:
     name: Validar y Probar
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del código
+      - name: Checkout del codigo
         uses: actions/checkout@v4
 
       - name: Configurar Docker Buildx
@@ -35,25 +40,64 @@ jobs:
           TRELLO_DOING_LIST_ID: ${{ secrets.TRELLO_DOING_LIST_ID }}
           TRELLO_DONE_LIST_ID: ${{ secrets.TRELLO_DONE_LIST_ID }}
         run: |
-          # Obtener la rama actual (limpiando referencias de pull request si aplica)
           BRANCH="${{ github.head_ref }}"
           if [ -z "$BRANCH" ]; then
             BRANCH="${{ github.ref_name }}"
           fi
           
-          # Extraer palabra clave de la rama (por ejemplo, de feature/hola-mundo se obtiene hola-mundo)
           BRANCH_KEYWORD=$(echo "$BRANCH" | awk -F'/' '{print $NF}' | tr '[:upper:]' '[:lower:]')
           echo "Buscando tarjeta para la rama: $BRANCH (palabra clave: $BRANCH_KEYWORD)"
           
-          # Obtener las tarjetas de la lista de tareas en progreso (Doing)
           CARDS=$(curl -s "https://api.trello.com/1/lists/${TRELLO_DOING_LIST_ID}/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}")
           
-          # Filtrar la tarjeta cuyo nombre contenga la palabra clave de la rama o "fase"
           CARD_ID=$(echo "$CARDS" | jq -r --arg kw "$BRANCH_KEYWORD" '.[] | select(.name | ascii_downcase | (contains($kw) or contains("fase 2") or contains("fase 3"))) | .id' | head -n 1)
           
           if [ -n "$CARD_ID" ] && [ "$CARD_ID" != "null" ]; then
-            echo "Tarjeta encontrada con ID: $CARD_ID. Moviéndola a la lista DONE..."
+            echo "Tarjeta encontrada con ID: $CARD_ID. Moviendola a la lista DONE..."
             curl -s -X PUT "https://api.trello.com/1/cards/${CARD_ID}?idList=${TRELLO_DONE_LIST_ID}&key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}"
           else
-            echo "No se encontró ninguna tarjeta coincidente con '$BRANCH_KEYWORD', 'fase 2' o 'fase 3' en la lista DOING."
+            echo "No se encontro ninguna tarjeta coincidente con '$BRANCH_KEYWORD', 'fase 2' o 'fase 3' en la lista DOING."
           fi
+
+      - name: Enviar correo de alerta en caso de fallos
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Fallo en pipeline CI/CD: ${{ github.repository }}"
+          to: ${{ secrets.MAIL_USERNAME }}
+          from: CI/CD Pipeline <ci-cd@example.com>
+          body: |
+            El pipeline ha fallado durante la ejecucion de la rama o pull request.
+            Repositorio: ${{ github.repository }}
+            Actor: ${{ github.actor }}
+            Commit: ${{ github.sha }}
+            Mas detalles: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  deploy:
+    name: Desplegar en GitHub Pages
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Subir artefacto para GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'src/'
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

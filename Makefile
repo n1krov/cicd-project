@@ -6,4 +6,4 @@ build:
 	docker build -t $(IMAGE_NAME) .
 
 test: build
-	docker run --rm $(IMAGE_NAME)
+	docker run --rm $(IMAGE_NAME) sh -c "PYTHONPATH=src pytest && behave"
