@@ -1,7 +1,7 @@
 # Plan de Arquitectura Técnica y Stack
 
 ## Stack Tecnológico
-- **IDE / Entorno:** Google Antigravity + Neovim (Edición y asistencia agéntica).
+- **IDE / Entorno:** Google Antigravity.
 - [cite_start]**Control de Versiones:** GitHub (Estrategia de ramas: master, dev, feature/ [cite: 7, 15]).
 - [cite_start]**Servidor de IC:** GitHub Actions (Orquestador principal del pipeline [cite: 7, 16]).
 - [cite_start]**Entorno Local (Build Local):** Docker + Makefile (Consistencia de entorno ).

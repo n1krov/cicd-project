@@ -6,10 +6,10 @@
 - [ ] Crear la estructura de archivos Markdown de SDD en la carpeta docs/.
 
 ## Fase 2: Entorno Local y Código Base
-- [ ] Implementar la página web base `src/index.html`.
-- [ ] Configurar el entorno de pruebas BDD (`features/hola_mundo.feature` y `steps.py`).
-- [ ] Crear el `Dockerfile` y el `Makefile` para la ejecución local encapsulada.
-- [ ] Ejecutar la prueba localmente con `make test` y verificar el "Fallo Rápido".
+- [x] Implementar la página web base `src/index.html`.
+- [x] Configurar el entorno de pruebas BDD (`features/hola_mundo.feature` y `steps.py`).
+- [x] Crear el `Dockerfile` y el `Makefile` para la ejecución local encapsulada.
+- [x] Ejecutar la prueba localmente con `make test` y verificar el "Fallo Rápido".
 
 ## Fase 3: Automatización del Servidor de IC y Feedback
 - [ ] Crear el workflow de GitHub Actions (`ci-cd.yml`).

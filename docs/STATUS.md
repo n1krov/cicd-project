@@ -2,7 +2,7 @@
 
 ## Progreso Actual
 - **Última actualización:** 2026-06-17
-- **Fase actual:** Fase 1 finalizada (Configuración web y credenciales completadas). Iniciando la Fase 2 (Entorno Local).
+- **Fase actual:** Fase 2 finalizada (Entorno Local y Código Base completados). Iniciando la Fase 3 (Automatización de IC y Feedback).
 
 ## Próximo Objetivo Inmediato
-- Crear el código base de la aplicación y automatizar los scripts de prueba en el entorno local de Docker para verificar la consistencia.
+- Configurar el orquestador principal del pipeline en GitHub Actions (`ci-cd.yml`) y habilitar las alertas y sincronización con Trello.
