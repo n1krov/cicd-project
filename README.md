@@ -1,4 +1,4 @@
-![Arquitectura del Pipeline de IC/CD](https://github.com/n1krov/cicd-project/blob/feature/master/docs/img/imagen.png)
+![Arquitectura del Pipeline de IC/CD](https://github.com/n1krov/cicd-project/blob/master/docs/img/imagen.png)
 
 ## Estructura de Calidad (Piramide de Pruebas)
 
