@@ -7,15 +7,20 @@ class MyHTMLParser(HTMLParser):
         super().__init__()
         self.found = False
         self.current_tag = None
+        self.in_body = False
 
     def handle_starttag(self, tag, attrs):
         self.current_tag = tag
+        if tag.lower() == "body":
+            self.in_body = True
 
     def handle_endtag(self, tag):
         self.current_tag = None
+        if tag.lower() == "body":
+            self.in_body = False
 
     def handle_data(self, data):
-        if data.strip() == "Hola Mundo" and self.current_tag is not None:
+        if self.in_body and data.strip() == "Hola Mundo" and self.current_tag is not None:
             self.found = True
 
 @given('que el runner de pruebas tiene acceso al archivo de fuentes')
